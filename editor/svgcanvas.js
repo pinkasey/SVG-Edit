@@ -2676,6 +2676,16 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
 				// we are starting an undoable change (a drag-rotation)
 				canvas.undoMgr.beginUndoableChange("transform", selectedElements);
 				break;
+			case "vwood":
+				break;
+			case "hwood":
+				break;
+			case "vstone":
+				break;
+			case "hstone":
+				break;
+			case "hen":
+				break;
 			default:
 				// This could occur in an extension
 				break;
@@ -3097,6 +3107,8 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
 	var mouseUp = function(evt)
 	{
 		if(evt.button === 2) return;
+		// pinkasey: all preset items are added on mouseDown - nothing to be done on mouseUp
+		if(isCurrentModePreset()) return;
 		var tempJustSelected = justSelected;
 		justSelected = null;
 		if (!started) return;
@@ -8722,5 +8734,15 @@ this.getPrivateMethods = function() {
 	}
 	return obj;
 };
+
+// Function: isCurrentModePreset
+// pinkasey: returns true iff the current mode is one of the preset-items i've added
+this.isCurrentModePreset(){
+	return (current_mode == "vwood" ||
+			current_mode == "hwood" ||
+			current_mode == "vstone" ||
+			current_mode == "hstone" ||
+			current_mode == "hen");
+}
 
 }

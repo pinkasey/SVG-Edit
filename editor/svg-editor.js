@@ -312,6 +312,13 @@
 					'image':'image.png',
 					'zoom':'zoom.png',
 					
+					'vwood':'level-editor/vertical-wood.png',
+					'hwood':'level-editor/horizontal-wood.png',
+					'vstone':'level-editor/vertical-stone.png',
+					'hstone':'level-editor/horizontal-stone.png',
+					'hen':'level-editor/hen.png',
+
+					
 					'clone':'clone.png',
 					'node_clone':'node_clone.png',
 					'delete':'delete.png',
@@ -368,6 +375,12 @@
 					'#tool_text,#layer_rename':'text',
 					'#tool_image':'image',
 					'#tool_zoom':'zoom',
+					
+					'#tool_vwood':'vwood',
+					'#tool_hwood':'hwood',
+					'#tool_vstone':'vstone',
+					'#tool_hstone':'hstone',
+					'#tool_hen':'hen',
 					
 					'#tool_clone,#tool_clone_multi':'clone',
 					'#tool_node_clone':'node_clone',
@@ -2365,6 +2378,36 @@
 				}
 			};
 		
+			var clickVWood = function(){
+				if (toolButtonClick('#tool_vwood')) {
+					svgCanvas.setMode('vwood');
+				}				
+			};
+			
+			var clickHWood = function(){
+				if (toolButtonClick('#tool_hwood')) {
+					svgCanvas.setMode('hwood');
+				}
+			};
+			
+			var clickVStone = function(){
+				if (toolButtonClick('#tool_vstone')) {
+					svgCanvas.setMode('vstone');
+				}
+			};
+			
+			var clickHStone = function(){
+				if (toolButtonClick('#tool_hstone')) {
+					svgCanvas.setMode('hsone');
+				}
+			};
+			
+			var clickHen = function(){
+				if (toolButtonClick('#tool_hen')) {
+					svgCanvas.setMode('hen');
+				}
+			};
+		
 			var clickFHPath = function() {
 				if (toolButtonClick('#tool_fhpath')) {
 					svgCanvas.setMode('fhpath');
@@ -3979,6 +4022,14 @@
 				// sel:'selector', fn:function, evt:'event', key:[key, preventDefault, NoDisableInInput]
 				var tool_buttons = [
 					{sel:'#tool_select', fn: clickSelect, evt: 'click', key: ['V', true]},
+
+					{sel:'#tool_vwood', fn: clickVWood, evt: 'click', key: 2},
+					{sel:'#tool_hwood', fn: clickHWood, evt: 'click', key: 3},
+					{sel:'#tool_vstone', fn: clickVStone, evt: 'click', key: 4},
+					{sel:'#tool_hstone', fn: clickHStone, evt: 'click', key: 5},
+					{sel:'#tool_hen', fn: clickHen, evt: 'click', key: 6},					
+
+					
 					{sel:'#tool_fhpath', fn: clickFHPath, evt: 'click', key: ['Q', true]},
 					{sel:'#tool_line', fn: clickLine, evt: 'click', key: ['L', true]},
 					{sel:'#tool_rect', fn: clickRect, evt: 'mouseup', key: ['R', true], parent: '#tools_rect', icon: 'rect'},
