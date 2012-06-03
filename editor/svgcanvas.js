@@ -8737,7 +8737,7 @@ this.getPrivateMethods = function() {
 
 // Function: isCurrentModePreset
 // pinkasey: returns true iff the current mode is one of the preset-items i've added
-this.isCurrentModePreset(){
+this.isCurrentModePreset = function(){
 	return (current_mode == "vwood" ||
 			current_mode == "hwood" ||
 			current_mode == "vstone" ||

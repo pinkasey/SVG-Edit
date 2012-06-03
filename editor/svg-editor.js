@@ -332,11 +332,11 @@
 					'reorient':'reorient.png',
 					
 					'align_left':'align-left.png',
-					'align_center':'align-center',
-					'align_right':'align-right',
-					'align_top':'align-top',
-					'align_middle':'align-middle',
-					'align_bottom':'align-bottom',
+					'align_center':'align-center.png',
+					'align_right':'align-right.png',
+					'align_top':'align-top.png',
+					'align_middle':'align-middle.png',
+					'align_bottom':'align-bottom.png',
 		
 					'go_up':'go-up.png',
 					'go_down':'go-down.png',
