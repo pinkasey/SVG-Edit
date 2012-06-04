@@ -336,7 +336,7 @@
 					'align_right':'align-right.png',
 					'align_top':'align-top.png',
 					'align_middle':'align-middle.png',
-					'align_bottom':'align-bottom.png',
+					'align_bottom':'align-bottom',
 		
 					'go_up':'go-up.png',
 					'go_down':'go-down.png',
