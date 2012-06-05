@@ -3108,7 +3108,7 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
 	{
 		if(evt.button === 2) return;
 		// pinkasey: all preset items are added on mouseDown - nothing to be done on mouseUp
-		//if(isCurrentModePreset()) return;
+		if(canvas.isCurrentModePreset()) return;
 		var tempJustSelected = justSelected;
 		justSelected = null;
 		if (!started) return;

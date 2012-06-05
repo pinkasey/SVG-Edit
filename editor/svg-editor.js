@@ -281,7 +281,7 @@
 			} else {
 				extFunc();
 			}
-			$.svgIcons(curConfig.imgPath + 'svg_edit_icons.svg', {
+			$.svgIcons(curConfig.imgPath + 'svg_edit_icons.svg___', {
 				w:24, h:24,
 				id_match: false,
  				no_img: !svgedit.browser.isWebkit(), // Opera & Firefox 4 gives odd behavior w/images
