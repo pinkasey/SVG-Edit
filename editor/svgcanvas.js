@@ -2677,6 +2677,21 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
 				canvas.undoMgr.beginUndoableChange("transform", selectedElements);
 				break;
 			case "vwood":
+				started = true;
+				start_x = x;
+				start_y = y;
+				addSvgElementFromJson({
+					"element": "rect",
+					"curStyles": true,
+					"attr": {
+						"x": x,
+						"y": y,
+						"width": 20,
+						"height": 60,
+						"id": getNextId(),
+						"opacity": cur_shape.opacity / 2
+					}
+				});
 				break;
 			case "hwood":
 				break;
@@ -2940,6 +2955,8 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
 				shape.setAttributeNS(null, "y2", y2);
 				if (!window.opera) svgroot.unsuspendRedraw(handle);
 				break;
+			case "vwood":
+				// fall through
 			case "foreignObject":
 				// fall through
 			case "square":
@@ -3108,7 +3125,7 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
 	{
 		if(evt.button === 2) return;
 		// pinkasey: all preset items are added on mouseDown - nothing to be done on mouseUp
-		if(canvas.isCurrentModePreset()) return;
+		//if(canvas.isCurrentModePreset()) return;
 		var tempJustSelected = justSelected;
 		justSelected = null;
 		if (!started) return;
@@ -3245,6 +3262,7 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
 			case "foreignObject":
 			case "square":
 			case "rect":
+			case "vwood":
 			case "image":
 				var attrs = $(element).attr(["width", "height"]);
 				// Image should be kept regardless of size (use inherit dimensions later)
