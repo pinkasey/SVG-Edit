@@ -317,6 +317,7 @@
 					'vstone':'level-editor/vertical-stone.png',
 					'hstone':'level-editor/horizontal-stone.png',
 					'hen':'level-editor/hen.png',
+					'hero':'level-editor/hero.png',
 
 					
 					'clone':'clone.png',
@@ -381,6 +382,7 @@
 					'#tool_vstone':'vstone',
 					'#tool_hstone':'hstone',
 					'#tool_hen':'hen',
+					'#tool_hero':'hero',
 					
 					'#tool_clone,#tool_clone_multi':'clone',
 					'#tool_node_clone':'node_clone',
@@ -1517,7 +1519,7 @@
 					$('#blur_slider').slider('option', 'value', blurval);
 					
 					if(svgCanvas.addedNew) {
-						if(elname === 'image') {
+						if(elname === 'image' && !svgCanvas.isCurrentModePreset()) {
 							// Prompt for URL if not a data URL
 							if(svgCanvas.getHref(elem).indexOf('data:') !== 0) {
 								promptImgURL();
@@ -2398,13 +2400,19 @@
 			
 			var clickHStone = function(){
 				if (toolButtonClick('#tool_hstone')) {
-					svgCanvas.setMode('hsone');
+					svgCanvas.setMode('hstone');
 				}
 			};
 			
 			var clickHen = function(){
 				if (toolButtonClick('#tool_hen')) {
 					svgCanvas.setMode('hen');
+				}
+			};
+			
+			var clickHero = function(){
+				if (toolButtonClick('#tool_hero')) {
+					svgCanvas.setMode('hero');
 				}
 			};
 		
@@ -4028,7 +4036,7 @@
 					{sel:'#tool_vstone', fn: clickVStone, evt: 'click', key: 4},
 					{sel:'#tool_hstone', fn: clickHStone, evt: 'click', key: 5},
 					{sel:'#tool_hen', fn: clickHen, evt: 'click', key: 6},					
-
+					{sel:'#tool_hero', fn: clickHero, evt: 'click', key: 7},					
 					
 					{sel:'#tool_fhpath', fn: clickFHPath, evt: 'click', key: ['Q', true]},
 					{sel:'#tool_line', fn: clickLine, evt: 'click', key: ['L', true]},

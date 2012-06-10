@@ -175,6 +175,14 @@ var clearSvgContentElement = canvas.clearSvgContentElement = function() {
 };
 clearSvgContentElement();
 
+var presets = canvas.presets = { hwood :  {"location" : "images/level-editor/horizontal-wood.png"  , dWidth : 100, dHeight : 20  },
+								 vwood :  {"location" : "images/level-editor/vertical-wood.png"    , dWidth : 20,  dHeight : 100 },
+								 hstone : {"location" : "images/level-editor/horizontal-stone.png" , dWidth : 100, dHeight : 20  },
+								 vstone : {"location" : "images/level-editor/vertical-stone.png"   , dWidth : 20,  dHeight : 100 },
+								 hero :   {"location" : "images/level-editor/hero.png"   		   , dWidth : 30,  dHeight : 30  },
+								 hen : 	  {"location" : "images/level-editor/hen.png"   		   , dWidth : 30,  dHeight : 30  }
+			};
+
 // Prefix string for element IDs
 var idprefix = "svg_";
 
@@ -2418,294 +2426,290 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
 		
 		start_transform = mouse_target.getAttribute("transform");
 		var tlist = getTransformList(mouse_target);
-		switch (current_mode) {
-			case "select":
-				started = true;
-				current_resize_mode = "none";
-				if(right_click) started = false;
-				
-				if (mouse_target != svgroot) {
-					// if this element is not yet selected, clear selection and select it
-					if (selectedElements.indexOf(mouse_target) == -1) {
-						// only clear selection if shift is not pressed (otherwise, add 
-						// element to selection)
-						if (!evt.shiftKey) {
-							// No need to do the call here as it will be done on addToSelection
-							clearSelection(true);
-						}
-						addToSelection([mouse_target]);
-						justSelected = mouse_target;
-						pathActions.clear();
-					}
-					// else if it's a path, go into pathedit mode in mouseup
+		if (canvas.isCurrentModePreset()) {
+			//new code - for preset (level) objects
+			started = true;
+			start_x = x;
+			start_y = y;
+			
+			var newPresetItem = addSvgElementFromJson({
+				"element": "image",
+				"curStyles": true,
+				"attr": {
+					"x": x,
+					"y": y,
+					"width":  presets[current_mode].dWidth,
+					"height": presets[current_mode].dHeight,
+					"id": getNextId(),
+					"opacity": cur_shape.opacity / 2
+				}
+			});
+			setHref(newPresetItem, presets[current_mode].location);
+		}else{
+			//original code
+			switch (current_mode) {
+				case "select":
+					started = true;
+					current_resize_mode = "none";
+					if(right_click) started = false;
 					
-					if(!right_click) {
-						// insert a dummy transform so if the element(s) are moved it will have
-						// a transform to use for its translate
-						for (var i = 0; i < selectedElements.length; ++i) {
-							if(selectedElements[i] == null) continue;
-							var slist = getTransformList(selectedElements[i]);
-							if(slist.numberOfItems) {
-								slist.insertItemBefore(svgroot.createSVGTransform(), 0);
-							} else {
-								slist.appendItem(svgroot.createSVGTransform());
+					if (mouse_target != svgroot) {
+						// if this element is not yet selected, clear selection and select it
+						if (selectedElements.indexOf(mouse_target) == -1) {
+							// only clear selection if shift is not pressed (otherwise, add 
+							// element to selection)
+							if (!evt.shiftKey) {
+								// No need to do the call here as it will be done on addToSelection
+								clearSelection(true);
+							}
+							addToSelection([mouse_target]);
+							justSelected = mouse_target;
+							pathActions.clear();
+						}
+						// else if it's a path, go into pathedit mode in mouseup
+						
+						if(!right_click) {
+							// insert a dummy transform so if the element(s) are moved it will have
+							// a transform to use for its translate
+							for (var i = 0; i < selectedElements.length; ++i) {
+								if(selectedElements[i] == null) continue;
+								var slist = getTransformList(selectedElements[i]);
+								if(slist.numberOfItems) {
+									slist.insertItemBefore(svgroot.createSVGTransform(), 0);
+								} else {
+									slist.appendItem(svgroot.createSVGTransform());
+								}
 							}
 						}
 					}
-				}
-				else if(!right_click){
-					clearSelection();
-					current_mode = "multiselect";
+					else if(!right_click){
+						clearSelection();
+						current_mode = "multiselect";
+						if (rubberBox == null) {
+							rubberBox = selectorManager.getRubberBandBox();
+						}
+						r_start_x *= current_zoom;
+						r_start_y *= current_zoom;
+	// 					console.log('p',[evt.pageX, evt.pageY]);					
+	// 					console.log('c',[evt.clientX, evt.clientY]);	
+	// 					console.log('o',[evt.offsetX, evt.offsetY]);	
+	// 					console.log('s',[start_x, start_y]);
+						
+						assignAttributes(rubberBox, {
+							'x': r_start_x,
+							'y': r_start_y,
+							'width': 0,
+							'height': 0,
+							'display': 'inline'
+						}, 100);
+					}
+					break;
+				case "zoom": 
+					started = true;
 					if (rubberBox == null) {
 						rubberBox = selectorManager.getRubberBandBox();
 					}
-					r_start_x *= current_zoom;
-					r_start_y *= current_zoom;
-// 					console.log('p',[evt.pageX, evt.pageY]);					
-// 					console.log('c',[evt.clientX, evt.clientY]);	
-// 					console.log('o',[evt.offsetX, evt.offsetY]);	
-// 					console.log('s',[start_x, start_y]);
-					
 					assignAttributes(rubberBox, {
-						'x': r_start_x,
-						'y': r_start_y,
-						'width': 0,
-						'height': 0,
-						'display': 'inline'
+							'x': real_x * current_zoom,
+							'y': real_x * current_zoom,
+							'width': 0,
+							'height': 0,
+							'display': 'inline'
 					}, 100);
-				}
-				break;
-			case "zoom": 
-				started = true;
-				if (rubberBox == null) {
-					rubberBox = selectorManager.getRubberBandBox();
-				}
-				assignAttributes(rubberBox, {
-						'x': real_x * current_zoom,
-						'y': real_x * current_zoom,
-						'width': 0,
-						'height': 0,
-						'display': 'inline'
-				}, 100);
-				break;
-			case "resize":
-				started = true;
-				start_x = x;
-				start_y = y;
-				
-				// Getting the BBox from the selection box, since we know we
-				// want to orient around it
-				init_bbox = svgedit.utilities.getBBox($('#selectedBox0')[0]);
-				var bb = {};
-				$.each(init_bbox, function(key, val) {
-					bb[key] = val/current_zoom;
-				});
-				init_bbox = bb;
-				
-				// append three dummy transforms to the tlist so that
-				// we can translate,scale,translate in mousemove
-				var pos = getRotationAngle(mouse_target)?1:0;
-				
-				if(hasMatrixTransform(tlist)) {
-					tlist.insertItemBefore(svgroot.createSVGTransform(), pos);
-					tlist.insertItemBefore(svgroot.createSVGTransform(), pos);
-					tlist.insertItemBefore(svgroot.createSVGTransform(), pos);
-				} else {
-					tlist.appendItem(svgroot.createSVGTransform());
-					tlist.appendItem(svgroot.createSVGTransform());
-					tlist.appendItem(svgroot.createSVGTransform());
+					break;
+				case "resize":
+					started = true;
+					start_x = x;
+					start_y = y;
 					
-					if(svgedit.browser.supportsNonScalingStroke()) {
-						mouse_target.style.vectorEffect = 'non-scaling-stroke';
-						var all = mouse_target.getElementsByTagName('*'), len = all.length;
-						for(var i = 0; i < all.length; i++) {
-							all[i].style.vectorEffect = 'non-scaling-stroke';
+					// Getting the BBox from the selection box, since we know we
+					// want to orient around it
+					init_bbox = svgedit.utilities.getBBox($('#selectedBox0')[0]);
+					var bb = {};
+					$.each(init_bbox, function(key, val) {
+						bb[key] = val/current_zoom;
+					});
+					init_bbox = bb;
+					
+					// append three dummy transforms to the tlist so that
+					// we can translate,scale,translate in mousemove
+					var pos = getRotationAngle(mouse_target)?1:0;
+					
+					if(hasMatrixTransform(tlist)) {
+						tlist.insertItemBefore(svgroot.createSVGTransform(), pos);
+						tlist.insertItemBefore(svgroot.createSVGTransform(), pos);
+						tlist.insertItemBefore(svgroot.createSVGTransform(), pos);
+					} else {
+						tlist.appendItem(svgroot.createSVGTransform());
+						tlist.appendItem(svgroot.createSVGTransform());
+						tlist.appendItem(svgroot.createSVGTransform());
+						
+						if(svgedit.browser.supportsNonScalingStroke()) {
+							mouse_target.style.vectorEffect = 'non-scaling-stroke';
+							var all = mouse_target.getElementsByTagName('*'), len = all.length;
+							for(var i = 0; i < all.length; i++) {
+								all[i].style.vectorEffect = 'non-scaling-stroke';
+							}
 						}
 					}
-				}
-				break;
-			case "fhellipse":
-			case "fhrect":
-			case "fhpath":
-				started = true;
-				d_attr = real_x + "," + real_y + " ";
-				var stroke_w = cur_shape.stroke_width == 0?1:cur_shape.stroke_width;
-				addSvgElementFromJson({
-					"element": "polyline",
-					"curStyles": true,
-					"attr": {
-						"points": d_attr,
-						"id": getNextId(),
-						"fill": "none",
-						"opacity": cur_shape.opacity / 2,
-						"stroke-linecap": "round",
-						"style": "pointer-events:none"
-					}
-				});
-				freehand.minx = real_x;
-				freehand.maxx = real_x;
-				freehand.miny = real_y;
-				freehand.maxy = real_y;
-				break;
-			case "image":
-				started = true;
-				var newImage = addSvgElementFromJson({
-					"element": "image",
-					"attr": {
-						"x": x,
-						"y": y,
-						"width": 0,
-						"height": 0,
-						"id": getNextId(),
-						"opacity": cur_shape.opacity / 2,
-						"style": "pointer-events:inherit"
-					}
-				});
-				setHref(newImage, last_good_img_url);
-				preventClickDefault(newImage);
-				break;
-			case "square":
-				// FIXME: once we create the rect, we lose information that this was a square
-				// (for resizing purposes this could be important)
-			case "rect":
-				started = true;
-				start_x = x;
-				start_y = y;
-				addSvgElementFromJson({
-					"element": "rect",
-					"curStyles": true,
-					"attr": {
-						"x": x,
-						"y": y,
-						"width": 0,
-						"height": 0,
-						"id": getNextId(),
-						"opacity": cur_shape.opacity / 2
-					}
-				});
-				break;
-			case "line":
-				started = true;
-				var stroke_w = cur_shape.stroke_width == 0?1:cur_shape.stroke_width;
-				addSvgElementFromJson({
-					"element": "line",
-					"curStyles": true,
-					"attr": {
-						"x1": x,
-						"y1": y,
-						"x2": x,
-						"y2": y,
-						"id": getNextId(),
-						"stroke": cur_shape.stroke,
-						"stroke-width": stroke_w,
-						"stroke-dasharray": cur_shape.stroke_dasharray,
-						"stroke-linejoin": cur_shape.stroke_linejoin,
-						"stroke-linecap": cur_shape.stroke_linecap,
-						"stroke-opacity": cur_shape.stroke_opacity,
-						"fill": "none",
-						"opacity": cur_shape.opacity / 2,
-						"style": "pointer-events:none"
-					}
-				});
-				break;
-			case "circle":
-				started = true;
-				addSvgElementFromJson({
-					"element": "circle",
-					"curStyles": true,
-					"attr": {
-						"cx": x,
-						"cy": y,
-						"r": 0,
-						"id": getNextId(),
-						"opacity": cur_shape.opacity / 2
-					}
-				});
-				break;
-			case "ellipse":
-				started = true;
-				addSvgElementFromJson({
-					"element": "ellipse",
-					"curStyles": true,
-					"attr": {
-						"cx": x,
-						"cy": y,
-						"rx": 0,
-						"ry": 0,
-						"id": getNextId(),
-						"opacity": cur_shape.opacity / 2
-					}
-				});
-				break;
-			case "text":
-				started = true;
-				var newText = addSvgElementFromJson({
-					"element": "text",
-					"curStyles": true,
-					"attr": {
-						"x": x,
-						"y": y,
-						"id": getNextId(),
-						"fill": cur_text.fill,
-						"stroke-width": cur_text.stroke_width,
-						"font-size": cur_text.font_size,
-						"font-family": cur_text.font_family,
-						"text-anchor": "middle",
-						"xml:space": "preserve",
-						"opacity": cur_shape.opacity
-					}
-				});
-// 					newText.textContent = "text";
-				break;
-			case "path":
-				// Fall through
-			case "pathedit":
-				start_x *= current_zoom;
-				start_y *= current_zoom;
-				pathActions.mouseDown(evt, mouse_target, start_x, start_y);
-				started = true;
-				break;
-			case "textedit":
-				start_x *= current_zoom;
-				start_y *= current_zoom;
-				textActions.mouseDown(evt, mouse_target, start_x, start_y);
-				started = true;
-				break;
-			case "rotate":
-				started = true;
-				// we are starting an undoable change (a drag-rotation)
-				canvas.undoMgr.beginUndoableChange("transform", selectedElements);
-				break;
-			case "vwood":
-				started = true;
-				start_x = x;
-				start_y = y;
-				addSvgElementFromJson({
-					"element": "rect",
-					"curStyles": true,
-					"attr": {
-						"x": x,
-						"y": y,
-						"width": 20,
-						"height": 60,
-						"id": getNextId(),
-						"opacity": cur_shape.opacity / 2
-					}
-				});
-				break;
-			case "hwood":
-				break;
-			case "vstone":
-				break;
-			case "hstone":
-				break;
-			case "hen":
-				break;
-			default:
-				// This could occur in an extension
-				break;
+					break;
+				case "fhellipse":
+				case "fhrect":
+				case "fhpath":
+					started = true;
+					d_attr = real_x + "," + real_y + " ";
+					var stroke_w = cur_shape.stroke_width == 0?1:cur_shape.stroke_width;
+					addSvgElementFromJson({
+						"element": "polyline",
+						"curStyles": true,
+						"attr": {
+							"points": d_attr,
+							"id": getNextId(),
+							"fill": "none",
+							"opacity": cur_shape.opacity / 2,
+							"stroke-linecap": "round",
+							"style": "pointer-events:none"
+						}
+					});
+					freehand.minx = real_x;
+					freehand.maxx = real_x;
+					freehand.miny = real_y;
+					freehand.maxy = real_y;
+					break;
+				case "image":
+					started = true;
+					var newImage = addSvgElementFromJson({
+						"element": "image",
+						"attr": {
+							"x": x,
+							"y": y,
+							"width": 0,
+							"height": 0,
+							"id": getNextId(),
+							"opacity": cur_shape.opacity / 2,
+							"style": "pointer-events:inherit"
+						}
+					});
+					setHref(newImage, last_good_img_url);
+					preventClickDefault(newImage);
+					break;
+				case "square":
+					// FIXME: once we create the rect, we lose information that this was a square
+					// (for resizing purposes this could be important)
+				case "rect":
+					started = true;
+					start_x = x;
+					start_y = y;
+					addSvgElementFromJson({
+						"element": "rect",
+						"curStyles": true,
+						"attr": {
+							"x": x,
+							"y": y,
+							"width": 0,
+							"height": 0,
+							"id": getNextId(),
+							"opacity": cur_shape.opacity / 2
+						}
+					});
+					break;
+				case "line":
+					started = true;
+					var stroke_w = cur_shape.stroke_width == 0?1:cur_shape.stroke_width;
+					addSvgElementFromJson({
+						"element": "line",
+						"curStyles": true,
+						"attr": {
+							"x1": x,
+							"y1": y,
+							"x2": x,
+							"y2": y,
+							"id": getNextId(),
+							"stroke": cur_shape.stroke,
+							"stroke-width": stroke_w,
+							"stroke-dasharray": cur_shape.stroke_dasharray,
+							"stroke-linejoin": cur_shape.stroke_linejoin,
+							"stroke-linecap": cur_shape.stroke_linecap,
+							"stroke-opacity": cur_shape.stroke_opacity,
+							"fill": "none",
+							"opacity": cur_shape.opacity / 2,
+							"style": "pointer-events:none"
+						}
+					});
+					break;
+				case "circle":
+					started = true;
+					addSvgElementFromJson({
+						"element": "circle",
+						"curStyles": true,
+						"attr": {
+							"cx": x,
+							"cy": y,
+							"r": 0,
+							"id": getNextId(),
+							"opacity": cur_shape.opacity / 2
+						}
+					});
+					break;
+				case "ellipse":
+					started = true;
+					addSvgElementFromJson({
+						"element": "ellipse",
+						"curStyles": true,
+						"attr": {
+							"cx": x,
+							"cy": y,
+							"rx": 0,
+							"ry": 0,
+							"id": getNextId(),
+							"opacity": cur_shape.opacity / 2
+						}
+					});
+					break;
+				case "text":
+					started = true;
+					var newText = addSvgElementFromJson({
+						"element": "text",
+						"curStyles": true,
+						"attr": {
+							"x": x,
+							"y": y,
+							"id": getNextId(),
+							"fill": cur_text.fill,
+							"stroke-width": cur_text.stroke_width,
+							"font-size": cur_text.font_size,
+							"font-family": cur_text.font_family,
+							"text-anchor": "middle",
+							"xml:space": "preserve",
+							"opacity": cur_shape.opacity
+						}
+					});
+	// 					newText.textContent = "text";
+					break;
+				case "path":
+					// Fall through
+				case "pathedit":
+					start_x *= current_zoom;
+					start_y *= current_zoom;
+					pathActions.mouseDown(evt, mouse_target, start_x, start_y);
+					started = true;
+					break;
+				case "textedit":
+					start_x *= current_zoom;
+					start_y *= current_zoom;
+					textActions.mouseDown(evt, mouse_target, start_x, start_y);
+					started = true;
+					break;
+				case "rotate":
+					started = true;
+					// we are starting an undoable change (a drag-rotation)
+					canvas.undoMgr.beginUndoableChange("transform", selectedElements);
+					break;
+				default:
+					// This could occur in an extension
+					break;
+			}
 		}
-		
 		var ext_result = runExtensions("mouseDown", {
 			event: evt,
 			start_x: start_x,
@@ -3143,214 +3147,220 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
 		// TODO: Make true when in multi-unit mode
 		var useUnit = false; // (curConfig.baseUnit !== 'px');
 		started = false;
-		switch (current_mode)
-		{
-			// intentionally fall-through to select here
-			case "resize":
-			case "multiselect":
-				if (rubberBox != null) {
-					rubberBox.setAttribute("display", "none");
-					curBBoxes = [];
-				}
-				current_mode = "select";
-			case "select":
-				if (selectedElements[0] != null) {
-					// if we only have one selected element
-					if (selectedElements[1] == null) {
-						// set our current stroke/fill properties to the element's
-						var selected = selectedElements[0];
-						switch ( selected.tagName ) {
-							case "g":
-							case "use":
-							case "image":
-							case "foreignObject":
-								break;
-							default:
-								cur_properties.fill = selected.getAttribute("fill");
-								cur_properties.fill_opacity = selected.getAttribute("fill-opacity");
-								cur_properties.stroke = selected.getAttribute("stroke");
-								cur_properties.stroke_opacity = selected.getAttribute("stroke-opacity");
-								cur_properties.stroke_width = selected.getAttribute("stroke-width");
-								cur_properties.stroke_dasharray = selected.getAttribute("stroke-dasharray");
-								cur_properties.stroke_linejoin = selected.getAttribute("stroke-linejoin");
-								cur_properties.stroke_linecap = selected.getAttribute("stroke-linecap");
-						}
+		if (canvas.isCurrentModePreset()) {
+			//new code - for preset (level) objects
+			var attrs = $(element).attr(["width", "height"]);
+			// Image should be kept regardless of size (use inherit dimensions later)
+			keep = (attrs.width != 0 || attrs.height != 0);
+		}else{
+			//original code
+			switch (current_mode) {
+				// intentionally fall-through to select here
+				case "resize":
+				case "multiselect":
+					if (rubberBox != null) {
+						rubberBox.setAttribute("display", "none");
+						curBBoxes = [];
+					}
+					current_mode = "select";
+				case "select":
+					if (selectedElements[0] != null) {
+						// if we only have one selected element
+						if (selectedElements[1] == null) {
+							// set our current stroke/fill properties to the element's
+							var selected = selectedElements[0];
+							switch ( selected.tagName ) {
+								case "g":
+								case "use":
+								case "image":
+								case "foreignObject":
+									break;
+								default:
+									cur_properties.fill = selected.getAttribute("fill");
+									cur_properties.fill_opacity = selected.getAttribute("fill-opacity");
+									cur_properties.stroke = selected.getAttribute("stroke");
+									cur_properties.stroke_opacity = selected.getAttribute("stroke-opacity");
+									cur_properties.stroke_width = selected.getAttribute("stroke-width");
+									cur_properties.stroke_dasharray = selected.getAttribute("stroke-dasharray");
+									cur_properties.stroke_linejoin = selected.getAttribute("stroke-linejoin");
+									cur_properties.stroke_linecap = selected.getAttribute("stroke-linecap");
+							}
 
-						if (selected.tagName == "text") {
-							cur_text.font_size = selected.getAttribute("font-size");
-							cur_text.font_family = selected.getAttribute("font-family");
+							if (selected.tagName == "text") {
+								cur_text.font_size = selected.getAttribute("font-size");
+								cur_text.font_family = selected.getAttribute("font-family");
+							}
+							selectorManager.requestSelector(selected).showGrips(true);
+							
+							// This shouldn't be necessary as it was done on mouseDown...
+	// 							call("selected", [selected]);
 						}
-						selectorManager.requestSelector(selected).showGrips(true);
+						// always recalculate dimensions to strip off stray identity transforms
+						recalculateAllSelectedDimensions();
+						// if it was being dragged/resized
+						if (real_x != r_start_x || real_y != r_start_y) {
+							var len = selectedElements.length;
+							for	(var i = 0; i < len; ++i) {
+								if (selectedElements[i] == null) break;
+								if(!selectedElements[i].firstChild) {
+									// Not needed for groups (incorrectly resizes elems), possibly not needed at all?
+									selectorManager.requestSelector(selectedElements[i]).resize();
+								}
+							}
+						}
+						// no change in position/size, so maybe we should move to pathedit
+						else {
+							var t = evt.target;
+							if (selectedElements[0].nodeName === "path" && selectedElements[1] == null) {
+								pathActions.select(selectedElements[0]);
+							} // if it was a path
+							// else, if it was selected and this is a shift-click, remove it from selection
+							else if (evt.shiftKey) {
+								if(tempJustSelected != t) {
+									canvas.removeFromSelection([t]);
+								}
+							}
+						} // no change in mouse position
 						
-						// This shouldn't be necessary as it was done on mouseDown...
-// 							call("selected", [selected]);
-					}
-					// always recalculate dimensions to strip off stray identity transforms
-					recalculateAllSelectedDimensions();
-					// if it was being dragged/resized
-					if (real_x != r_start_x || real_y != r_start_y) {
-						var len = selectedElements.length;
-						for	(var i = 0; i < len; ++i) {
-							if (selectedElements[i] == null) break;
-							if(!selectedElements[i].firstChild) {
-								// Not needed for groups (incorrectly resizes elems), possibly not needed at all?
-								selectorManager.requestSelector(selectedElements[i]).resize();
-							}
-						}
-					}
-					// no change in position/size, so maybe we should move to pathedit
-					else {
-						var t = evt.target;
-						if (selectedElements[0].nodeName === "path" && selectedElements[1] == null) {
-							pathActions.select(selectedElements[0]);
-						} // if it was a path
-						// else, if it was selected and this is a shift-click, remove it from selection
-						else if (evt.shiftKey) {
-							if(tempJustSelected != t) {
-								canvas.removeFromSelection([t]);
-							}
-						}
-					} // no change in mouse position
-					
-					// Remove non-scaling stroke
-					if(svgedit.browser.supportsNonScalingStroke()) {
-						var elem = selectedElements[0];
-						if (elem) {
-							elem.removeAttribute('style');
-							svgedit.utilities.walkTree(elem, function(elem) {
+						// Remove non-scaling stroke
+						if(svgedit.browser.supportsNonScalingStroke()) {
+							var elem = selectedElements[0];
+							if (elem) {
 								elem.removeAttribute('style');
-							});
+								svgedit.utilities.walkTree(elem, function(elem) {
+									elem.removeAttribute('style');
+								});
+							}
 						}
-					}
 
-				}
-				return;
-				break;
-			case "zoom":
-				if (rubberBox != null) {
-					rubberBox.setAttribute("display", "none");
-				}
-				var factor = evt.shiftKey?.5:2;
-				call("zoomed", {
-					'x': Math.min(r_start_x, real_x),
-					'y': Math.min(r_start_y, real_y),
-					'width': Math.abs(real_x - r_start_x),
-					'height': Math.abs(real_y - r_start_y),
-					'factor': factor
-				});
-				return;
-			case "fhpath":
-				// Check that the path contains at least 2 points; a degenerate one-point path
-				// causes problems.
-				// Webkit ignores how we set the points attribute with commas and uses space
-				// to separate all coordinates, see https://bugs.webkit.org/show_bug.cgi?id=29870
-				var coords = element.getAttribute('points');
-				var commaIndex = coords.indexOf(',');
-				if (commaIndex >= 0) {
-					keep = coords.indexOf(',', commaIndex+1) >= 0;
-				} else {
-					keep = coords.indexOf(' ', coords.indexOf(' ')+1) >= 0;
-				}
-				if (keep) {
-					element = pathActions.smoothPolylineIntoPath(element);
-				}
-				break;
-			case "line":
-				var attrs = $(element).attr(["x1", "x2", "y1", "y2"]);
-				keep = (attrs.x1 != attrs.x2 || attrs.y1 != attrs.y2);
-				break;
-			case "foreignObject":
-			case "square":
-			case "rect":
-			case "vwood":
-			case "image":
-				var attrs = $(element).attr(["width", "height"]);
-				// Image should be kept regardless of size (use inherit dimensions later)
-				keep = (attrs.width != 0 || attrs.height != 0) || current_mode === "image";
-				break;
-			case "circle":
-				keep = (element.getAttribute('r') != 0);
-				break;
-			case "ellipse":
-				var attrs = $(element).attr(["rx", "ry"]);
-				keep = (attrs.rx != null || attrs.ry != null);
-				break;
-			case "fhellipse":
-				if ((freehand.maxx - freehand.minx) > 0 &&
-					(freehand.maxy - freehand.miny) > 0) {
-					element = addSvgElementFromJson({
-						"element": "ellipse",
-						"curStyles": true,
-						"attr": {
-							"cx": (freehand.minx + freehand.maxx) / 2,
-							"cy": (freehand.miny + freehand.maxy) / 2,
-							"rx": (freehand.maxx - freehand.minx) / 2,
-							"ry": (freehand.maxy - freehand.miny) / 2,
-							"id": getId()
-						}
+					}
+					return;
+					break;
+				case "zoom":
+					if (rubberBox != null) {
+						rubberBox.setAttribute("display", "none");
+					}
+					var factor = evt.shiftKey?.5:2;
+					call("zoomed", {
+						'x': Math.min(r_start_x, real_x),
+						'y': Math.min(r_start_y, real_y),
+						'width': Math.abs(real_x - r_start_x),
+						'height': Math.abs(real_y - r_start_y),
+						'factor': factor
 					});
-					call("changed",[element]);
+					return;
+				case "fhpath":
+					// Check that the path contains at least 2 points; a degenerate one-point path
+					// causes problems.
+					// Webkit ignores how we set the points attribute with commas and uses space
+					// to separate all coordinates, see https://bugs.webkit.org/show_bug.cgi?id=29870
+					var coords = element.getAttribute('points');
+					var commaIndex = coords.indexOf(',');
+					if (commaIndex >= 0) {
+						keep = coords.indexOf(',', commaIndex+1) >= 0;
+					} else {
+						keep = coords.indexOf(' ', coords.indexOf(' ')+1) >= 0;
+					}
+					if (keep) {
+						element = pathActions.smoothPolylineIntoPath(element);
+					}
+					break;
+				case "line":
+					var attrs = $(element).attr(["x1", "x2", "y1", "y2"]);
+					keep = (attrs.x1 != attrs.x2 || attrs.y1 != attrs.y2);
+					break;
+				case "foreignObject":
+				case "square":
+				case "rect":
+				case "image":
+					var attrs = $(element).attr(["width", "height"]);
+					// Image should be kept regardless of size (use inherit dimensions later)
+					keep = (attrs.width != 0 || attrs.height != 0) || current_mode === "image";
+					break;
+				case "circle":
+					keep = (element.getAttribute('r') != 0);
+					break;
+				case "ellipse":
+					var attrs = $(element).attr(["rx", "ry"]);
+					keep = (attrs.rx != null || attrs.ry != null);
+					break;
+				case "fhellipse":
+					if ((freehand.maxx - freehand.minx) > 0 &&
+						(freehand.maxy - freehand.miny) > 0) {
+						element = addSvgElementFromJson({
+							"element": "ellipse",
+							"curStyles": true,
+							"attr": {
+								"cx": (freehand.minx + freehand.maxx) / 2,
+								"cy": (freehand.miny + freehand.maxy) / 2,
+								"rx": (freehand.maxx - freehand.minx) / 2,
+								"ry": (freehand.maxy - freehand.miny) / 2,
+								"id": getId()
+							}
+						});
+						call("changed",[element]);
+						keep = true;
+					}
+					break;
+				case "fhrect":
+					if ((freehand.maxx - freehand.minx) > 0 &&
+						(freehand.maxy - freehand.miny) > 0) {
+						element = addSvgElementFromJson({
+							"element": "rect",
+							"curStyles": true,
+							"attr": {
+								"x": freehand.minx,
+								"y": freehand.miny,
+								"width": (freehand.maxx - freehand.minx),
+								"height": (freehand.maxy - freehand.miny),
+								"id": getId()
+							}
+						});
+						call("changed",[element]);
+						keep = true;
+					}
+					break;
+				case "text":
 					keep = true;
-				}
-				break;
-			case "fhrect":
-				if ((freehand.maxx - freehand.minx) > 0 &&
-					(freehand.maxy - freehand.miny) > 0) {
-					element = addSvgElementFromJson({
-						"element": "rect",
-						"curStyles": true,
-						"attr": {
-							"x": freehand.minx,
-							"y": freehand.miny,
-							"width": (freehand.maxx - freehand.minx),
-							"height": (freehand.maxy - freehand.miny),
-							"id": getId()
-						}
-					});
-					call("changed",[element]);
+					selectOnly([element]);
+					textActions.start(element);
+					break;
+				case "path":
+					// set element to null here so that it is not removed nor finalized
+					element = null;
+					// continue to be set to true so that mouseMove happens
+					started = true;
+					
+					var res = pathActions.mouseUp(evt, element, mouse_x, mouse_y);
+					element = res.element
+					keep = res.keep;
+					break;
+				case "pathedit":
 					keep = true;
-				}
-				break;
-			case "text":
-				keep = true;
-				selectOnly([element]);
-				textActions.start(element);
-				break;
-			case "path":
-				// set element to null here so that it is not removed nor finalized
-				element = null;
-				// continue to be set to true so that mouseMove happens
-				started = true;
-				
-				var res = pathActions.mouseUp(evt, element, mouse_x, mouse_y);
-				element = res.element
-				keep = res.keep;
-				break;
-			case "pathedit":
-				keep = true;
-				element = null;
-				pathActions.mouseUp(evt);
-				break;
-			case "textedit":
-				keep = false;
-				element = null;
-				textActions.mouseUp(evt, mouse_x, mouse_y);
-				break;
-			case "rotate":
-				keep = true;
-				element = null;
-				current_mode = "select";
-				var batchCmd = canvas.undoMgr.finishUndoableChange();
-				if (!batchCmd.isEmpty()) { 
-					addCommandToHistory(batchCmd);
-				}
-				// perform recalculation to weed out any stray identity transforms that might get stuck
-				recalculateAllSelectedDimensions();
-				call("changed", selectedElements);
-				break;
-			default:
-				// This could occur in an extension
-				break;
+					element = null;
+					pathActions.mouseUp(evt);
+					break;
+				case "textedit":
+					keep = false;
+					element = null;
+					textActions.mouseUp(evt, mouse_x, mouse_y);
+					break;
+				case "rotate":
+					keep = true;
+					element = null;
+					current_mode = "select";
+					var batchCmd = canvas.undoMgr.finishUndoableChange();
+					if (!batchCmd.isEmpty()) { 
+						addCommandToHistory(batchCmd);
+					}
+					// perform recalculation to weed out any stray identity transforms that might get stuck
+					recalculateAllSelectedDimensions();
+					call("changed", selectedElements);
+					break;
+				default:
+					// This could occur in an extension
+					break;
+			}
 		}
 		
 		var ext_result = runExtensions("mouseUp", {
@@ -8760,7 +8770,8 @@ this.isCurrentModePreset = function(){
 			current_mode == "hwood" ||
 			current_mode == "vstone" ||
 			current_mode == "hstone" ||
-			current_mode == "hen");
+			current_mode == "hen" ||
+			current_mode == "hero");
 }
 
 }
